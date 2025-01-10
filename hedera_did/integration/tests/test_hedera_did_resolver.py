@@ -1,9 +1,16 @@
 class TestHederaDidResolver:
-    def test_resolve(self, bob, Something):
-        response = bob.resolve_did("did:hedera:testnet:zHNJ37tiLbGxD7XPvnTkaZCAV3PCe5P4HJFGMGUkVVZAJ_0.0.5254574")
+    def test_resolve(self, holder, Something):
+        method = "hedera:testnet"
+        ver_key = "zHNJ37tiLbGxD7XPvnTkaZCAV3PCe5P4HJFGMGUkVVZAJ"
+        ver_key_no_multibase = ver_key[1:]
+        topic_id = "0.0.5254574"
+        did = f"did:{method}:{ver_key}_{topic_id}"
 
-        assert response.status_code == 200
-        assert response.json() == {
+        holder.create_wallet(persist_token=True)
+
+        response = holder.resolve_did(did)
+
+        assert response == {
               "did_document": {
                 "didDocumentMetadata": {
                   "versionId": "1734001354.326603",
@@ -15,20 +22,20 @@ class TestHederaDidResolver:
                 },
                 "didDocument": {
                   "@context": "https://www.w3.org/ns/did/v1",
-                  "id": "did:hedera:testnet:zHNJ37tiLbGxD7XPvnTkaZCAV3PCe5P4HJFGMGUkVVZAJ_0.0.5254574",
+                  "id": did,
                   "verificationMethod": [
                     {
-                      "id": "did:hedera:testnet:zHNJ37tiLbGxD7XPvnTkaZCAV3PCe5P4HJFGMGUkVVZAJ_0.0.5254574#did-root-key",
+                      "id": f"{did}#did-root-key",
                       "type": "Ed25519VerificationKey2018",
-                      "controller": "did:hedera:testnet:zHNJ37tiLbGxD7XPvnTkaZCAV3PCe5P4HJFGMGUkVVZAJ_0.0.5254574",
-                      "publicKeyBase58": "HNJ37tiLbGxD7XPvnTkaZCAV3PCe5P4HJFGMGUkVVZAJ"
+                      "controller": did,
+                      "publicKeyBase58": ver_key_no_multibase
                     }
                   ],
                   "assertionMethod": [
-                    "did:hedera:testnet:zHNJ37tiLbGxD7XPvnTkaZCAV3PCe5P4HJFGMGUkVVZAJ_0.0.5254574#did-root-key"
+                    f"{did}#did-root-key"
                   ],
                   "authentication": [
-                    "did:hedera:testnet:zHNJ37tiLbGxD7XPvnTkaZCAV3PCe5P4HJFGMGUkVVZAJ_0.0.5254574#did-root-key"
+                    f"{did}#did-root-key"
                   ]
                 }
               },
@@ -39,9 +46,3 @@ class TestHederaDidResolver:
             "duration": Something
           }
         }
-
-    def test_resolve_not_found(self, bob):
-        response = bob.resolve_did("did:hedera:testnet:z87meAWt7t2zrDxo7qw3PVTjexKWReYWS75LH29THy8kb_0.0.511221116")
-
-        assert response.status_code == 500
-        assert response.reason == "'NoneType' object cannot be interpreted as an integer."

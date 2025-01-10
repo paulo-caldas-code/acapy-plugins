@@ -4,8 +4,7 @@ from did_sdk_py import HederaClientProvider, OperatorConfig
 
 instances_map = {}
 
-
-def get_client_provider(network, operator_id, operator_key_der):
+def get_client_provider(network, operator_id, operator_key_der) -> HederaClientProvider:
     """Return client provider instance."""
 
     key = f"{network};{operator_id};{operator_key_der}"

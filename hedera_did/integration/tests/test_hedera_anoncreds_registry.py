@@ -1,32 +1,45 @@
 class TestHederaAnonCredsRegistry:
-    def test_get_schema(self, bob):
-        response = bob.get_schema("did:hedera:testnet:zFwZUYPrhi333pC2anAnSkctXgZzLfeR8DXURo2N4xV1C_0.0.5284925/anoncreds/v0/SCHEMA/0.0.5284932")
+    def test_get_schema(self, holder):
+        issuer_id = "did:hedera:testnet:zFwZUYPrhi333pC2anAnSkctXgZzLfeR8DXURo2N4xV1C_0.0.5284925"
+        schema_id = f"{issuer_id}/anoncreds/v0/SCHEMA/0.0.5284932"
 
-        assert response.status_code == 200
-        assert response.json() == {
+        holder.create_wallet(persist_token=True)
+
+        response = holder.get_schema(schema_id)
+
+        assert response == {
+          "schema_metadata": {},
+          "resolution_metadata": {},
+          "schema_id": schema_id,
           "schema": {
-            "issuerId": "did:hedera:testnet:zFwZUYPrhi333pC2anAnSkctXgZzLfeR8DXURo2N4xV1C_0.0.5284925",
+            "issuerId": issuer_id,
             "attrNames": [
               "score"
             ],
             "name": "Example schema 18-12-2024",
             "version": "1.0"
           },
-          "schema_id": "did:hedera:testnet:zFwZUYPrhi333pC2anAnSkctXgZzLfeR8DXURo2N4xV1C_0.0.5284925/anoncreds/v0/SCHEMA/0.0.5284932",
-          "resolution_metadata": {},
-          "schema_metadata": {}
         }
 
 
-    def test_get_credential_definition(self, bob):
-        response = bob.get_credential_definition("did:hedera:testnet:zcZMJMxUGZpxKmP35ACBWLhQyQVqtRc5T7LQhdyTDtEiP_0.0.5280965/anoncreds/v0/PUBLIC_CRED_DEF/0.0.5280968")
+    def test_get_credential_definition(self, holder):
+        issuer_id = "did:hedera:testnet:zcZMJMxUGZpxKmP35ACBWLhQyQVqtRc5T7LQhdyTDtEiP_0.0.5280965"
+        schema_id = f"{issuer_id}/anoncreds/v0/SCHEMA/0.0.5280967"
+        credential_definition_id = f"{issuer_id}/anoncreds/v0/PUBLIC_CRED_DEF/0.0.5280968"
 
-        assert response.status_code == 200
-        assert response.json() == {
-          "credential_definition_id": "did:hedera:testnet:zcZMJMxUGZpxKmP35ACBWLhQyQVqtRc5T7LQhdyTDtEiP_0.0.5280965/anoncreds/v0/PUBLIC_CRED_DEF/0.0.5280968",
+        holder.create_wallet(persist_token=True)
+
+        response = holder.get_credential_definition(credential_definition_id)
+
+        assert response == {
+          # FIXME Acapy is not returning this item, why not?
+          # "credential_definition_metadata": {},
+
+          "resolution_metadata": {},
+          "credential_definition_id": credential_definition_id,
           "credential_definition": {
-            "issuerId": "did:hedera:testnet:zcZMJMxUGZpxKmP35ACBWLhQyQVqtRc5T7LQhdyTDtEiP_0.0.5280965",
-            "schemaId": "did:hedera:testnet:zcZMJMxUGZpxKmP35ACBWLhQyQVqtRc5T7LQhdyTDtEiP_0.0.5280965/anoncreds/v0/SCHEMA/0.0.5280967",
+            "issuerId": issuer_id,
+            "schemaId": schema_id,
             "tag": "demo-cred-def-1.0",
             "type": "CL",
             "value": {
@@ -54,5 +67,4 @@ class TestHederaAnonCredsRegistry:
               }
             }
           },
-          "resolution_metadata": {}
         }

@@ -1,15 +1,14 @@
-from acapy_agent.resolver.did_resolver import ResolverError
-from pydid.did import InvalidDIDError
-import pytest
-
 from unittest.mock import AsyncMock, patch
 
+from acapy_agent.resolver.did_resolver import ResolverError
 from hedera_did.did_resolver import HederaDIDResolver
+from pydid.did import InvalidDIDError
+import pytest
 
 
 class TestDidResolver:
     @patch("hedera_did.did_resolver.SdkHederaDidResolver")
-    async def test_resolve(self, mock_hedera_did_resolver, profile, context):
+    async def test_resolve_success(self, mock_hedera_did_resolver, profile, context):
         did = "did:hedera:testnet:zHNJ37tiLbGxD7XPvnTkaZCAV3PCe5P4HJFGMGUkVVZAJ_0.0.5254574"
         did_document = {
                 "didDocumentMetadata": {
@@ -78,9 +77,8 @@ class TestDidResolver:
             await resolver.resolve(profile, did)
 
     @patch("hedera_did.did_resolver.SdkHederaDidResolver")
-    async def test_resolve_deactivated_document(self, mock_hedera_did_resolver, profile, context):
+    async def test_resolve_success_deactivated_document(self, mock_hedera_did_resolver, profile, context):
         did = "did:hedera:testnet:zHNJ37tiLbGxD7XPvnTkaZCAV3PCe5P4HJFGMGUkVVZAJ_0.0.5254574"
-
         did_document = {
             "didDocument": {
                 "@context": "https://www.w3.org/ns/did/v1",
@@ -110,7 +108,6 @@ class TestDidResolver:
     @patch("hedera_did.did_resolver.SdkHederaDidResolver")
     async def test_resolve_no_medatada(self, mock_hedera_did_resolver, profile, context):
         did = "did:hedera:testnet:zHNJ37tiLbGxD7XPvnTkaZCAV3PCe5P4HJFGMGUkVVZAJ_0.0.5254574"
-
         did_document = {
             "didDocument": None,
             "didDocumentMetadata": {},
@@ -127,7 +124,6 @@ class TestDidResolver:
     @patch("hedera_did.did_resolver.SdkHederaDidResolver")
     async def test_resolve_no_error_message(self, mock_hedera_did_resolver, profile, context):
         did = "did:hedera:testnet:zHNJ37tiLbGxD7XPvnTkaZCAV3PCe5P4HJFGMGUkVVZAJ_0.0.5254574"
-
         did_document = {
             "didDocument": None,
             "didDocumentMetadata": {},

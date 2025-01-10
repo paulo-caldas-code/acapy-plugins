@@ -1,23 +1,18 @@
-"""Hedera resolver."""
+"""Hedera DID resolver."""
 
 import re
 from typing import Pattern, cast
 
 from acapy_agent.core.profile import Profile
-from acapy_agent.resolver.base import (
-        BaseDIDResolver,
-        ResolverError,
-        ResolverType,
-        )
-
+from acapy_agent.resolver.base import BaseDIDResolver, ResolverError, ResolverType
 from did_sdk_py.did.hedera_did_resolver import HederaDidResolver as SdkHederaDidResolver
-
-from .config import Config
+from did_sdk_py.did.types import DIDResolutionResult
 
 from .client import get_client_provider
+from .config import Config
 
 class HederaDIDResolver(BaseDIDResolver):
-    """Hedera resolver."""
+    """Hedera DID resolver."""
 
     def __init__(self):
         """Constructor."""
@@ -41,17 +36,17 @@ class HederaDIDResolver(BaseDIDResolver):
 
         self._hedera_did_resolver = SdkHederaDidResolver(client_provider)
 
-    async def _internal_resolve(self, did: str) -> dict:
-        """Resolve Hedera DIDs."""
-        result = await self._hedera_did_resolver.resolve(did)
+    async def _resolve(self, profile: Profile, did: str, service_accept = None) -> dict:
+        """Resolve Hedera DID."""
+        result: DIDResolutionResult = await self._hedera_did_resolver.resolve(did)
 
-        did_resolution_metadata = result.get('didResolutionMetadata')
+        did_resolution_metadata = result.get("didResolutionMetadata")
 
         if not did_resolution_metadata:
             raise ResolverError("Unknown error")
 
-        if 'error' in did_resolution_metadata:
-            error_message = did_resolution_metadata.get('message')
+        if "error" in did_resolution_metadata:
+            error_message = did_resolution_metadata.get("message")
 
             if not error_message:
                 raise ResolverError("Unknown error")
@@ -59,7 +54,3 @@ class HederaDIDResolver(BaseDIDResolver):
             raise ResolverError(error_message)
 
         return cast(dict, result)
-
-    async def _resolve(self, profile: Profile, did: str, service_accept = None) -> dict:
-        """Resolve Hedera DIDs."""
-        return await self._internal_resolve(did)

@@ -1,6 +1,6 @@
 FROM python:3.12-slim-bullseye AS base
 
-ARG GITHUB_TOKEN="<CHANGE_ME>"
+ARG GITHUB_TOKEN
 
 WORKDIR /usr/src/app
 
@@ -10,7 +10,7 @@ USER root
 WORKDIR /usr/src/app
 ENV POETRY_VERSION=1.7.1
 ENV POETRY_HOME=/opt/poetry
-RUN apt-get update && apt-get install -y curl wget git && apt-get clean
+RUN apt-get update && apt-get install -y curl wget git && apt-get clean 
 RUN curl -sSL https://install.python-poetry.org | python -
 
 ENV PATH="/opt/poetry/bin:$PATH"
@@ -29,7 +29,7 @@ USER $user
 
 FROM python:3.12-bullseye
 
-RUN apt-get update && apt-get install -y zip && apt-get clean
+RUN apt-get update && apt-get install -y zip && apt-get clean 
 
 # Install sdkman: https://sdkman.io/install
 ENV SDKMAN_DIR="/usr/local/sdkman"

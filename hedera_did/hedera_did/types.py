@@ -1,64 +1,58 @@
-from did_sdk_py.anoncreds.types import (
-        AnonCredsCredDef as HederaAnonCredsCredDef,
-        GetCredDefResult as HederaGetCredDefResult,
-        GetSchemaResult as HederaGetSchemaResult,
-        RegisterRevListResult as HederaRegisterRevListResult,
-        RegisterRevRegDefResult as HederaRegisterRevRegDefResult,
-        RegisterSchemaResult as HederaSchemaResult,
-        RegisterCredDefResult as HederaCredDefResult,
-        GetRevRegDefResult  as HederaGetRevRegDefResult,
-        GetRevListResult as HederaGetRevListResult,
-        AnonCredsRevList as HederaAnonCredsRevList,
-        )
-from did_sdk_py.anoncreds.models.schema import(
-        AnonCredsSchema as HederaAnonCredsSchema,
-        )
-from did_sdk_py.anoncreds.models import(
-        CredDefValuePrimary as HederaCredDefValuePrimary,
-        CredDefValue as HederaCredDefValue,
-        CredDefValueRevocation as HederaCredDefValueRevocation,
-        )
-
-from did_sdk_py.anoncreds.models.revocation.revocation_registry_definition import (
-        AnonCredsRevRegDef as HederaAnonCredsRevRegDef,
-        RevRegDefValue as HederaRevRegDefValue,
-        )
-
-from acapy_agent.anoncreds.models.revocation import (
-        RevListState as AcapyRevListState,
-        RevRegDefValue as AcapyRevRegDefValue,
-        RevRegDefState as AcapyRevRegDefState,
-        )
+"""Translate between data classes."""
 
 from acapy_agent.anoncreds.base import (
-        AnonCredsSchema as AcapyAnonCredsSchema,
-        GetSchemaResult as AcapyGetSchemaResult,
-        CredDef as AcapyAnonCredsCredDef,
-        SchemaResult as AcapySchemaResult,
-        CredDefResult as AcapyCredDefResult,
-        GetRevRegDefResult as AcapyGetRevRegDefResult,
-        RevRegDef as AcapyRevRegDef,
-        GetRevListResult as AcapyGetRevListResult,
-        RevList as AcapyRevList,
-        RevListResult as AcapyRevListResult,
-        RevRegDefResult as AcapyRevRegDefResult,
-        )
-
-
+    AnonCredsSchema as AcapyAnonCredsSchema,
+    CredDef as AcapyAnonCredsCredDef,
+    CredDefResult as AcapyCredDefResult,
+    GetRevListResult as AcapyGetRevListResult,
+    GetRevRegDefResult as AcapyGetRevRegDefResult,
+    GetSchemaResult as AcapyGetSchemaResult,
+    RevList as AcapyRevList,
+    RevListResult as AcapyRevListResult,
+    RevRegDef as AcapyRevRegDef,
+    RevRegDefResult as AcapyRevRegDefResult,
+    SchemaResult as AcapySchemaResult,
+)
 from acapy_agent.anoncreds.models.credential_definition import (
-        GetCredDefResult as AcapyGetCredDefResult,
-        CredDefValuePrimary as AcapyCredDefValuePrimary,
-        CredDefValue as AcapyCredDefValue,
-        CredDefValueRevocation as AcapyCredDefValueRevocation,
-        CredDefState as AcapyCredDefState,
-        )
+    CredDefState as AcapyCredDefState,
+    CredDefValue as AcapyCredDefValue,
+    CredDefValuePrimary as AcapyCredDefValuePrimary,
+    CredDefValueRevocation as AcapyCredDefValueRevocation,
+    GetCredDefResult as AcapyGetCredDefResult,
+)
+from acapy_agent.anoncreds.models.revocation import (
+    RevListState as AcapyRevListState,
+    RevRegDefState as AcapyRevRegDefState,
+    RevRegDefValue as AcapyRevRegDefValue,
+)
+from acapy_agent.anoncreds.models.schema import SchemaState as AcapySchemaState
+from did_sdk_py.anoncreds.models import (
+    CredDefValue as HederaCredDefValue,
+    CredDefValuePrimary as HederaCredDefValuePrimary,
+    CredDefValueRevocation as HederaCredDefValueRevocation,
+)
+from did_sdk_py.anoncreds.models.revocation.revocation_registry_definition import (
+    AnonCredsRevRegDef as HederaAnonCredsRevRegDef,
+    RevRegDefValue as HederaRevRegDefValue,
+)
+from did_sdk_py.anoncreds.models.schema import AnonCredsSchema as HederaAnonCredsSchema
+from did_sdk_py.anoncreds.types import (
+    AnonCredsCredDef as HederaAnonCredsCredDef,
+    AnonCredsRevList as HederaAnonCredsRevList,
+    GetCredDefResult as HederaGetCredDefResult,
+    GetRevListResult as HederaGetRevListResult,
+    GetRevRegDefResult as HederaGetRevRegDefResult,
+    GetSchemaResult as HederaGetSchemaResult,
+    RegisterCredDefResult as HederaCredDefResult,
+    RegisterRevListResult as HederaRegisterRevListResult,
+    RegisterRevRegDefResult as HederaRegisterRevRegDefResult,
+    RegisterSchemaResult as HederaSchemaResult,
+)
 
-from acapy_agent.anoncreds.models.schema import (
-        SchemaState as AcapySchemaState
-        )
 
-
-def buildHederaAnonCredsSchema(schema: AcapyAnonCredsSchema) -> HederaAnonCredsSchema:
+def buildHederaAnonCredsSchema(
+        schema: AcapyAnonCredsSchema
+        ) -> HederaAnonCredsSchema:
     """Translate object."""
     return HederaAnonCredsSchema(
             name=schema.name,
@@ -68,7 +62,9 @@ def buildHederaAnonCredsSchema(schema: AcapyAnonCredsSchema) -> HederaAnonCredsS
             )
 
 
-def buildHederaAnonCredsCredDef(cred_def: AcapyAnonCredsCredDef) -> HederaAnonCredsCredDef:
+def buildHederaAnonCredsCredDef(
+        cred_def: AcapyAnonCredsCredDef
+        ) -> HederaAnonCredsCredDef:
    """Translate object."""
    revocation = ( HederaCredDefValueRevocation(
                          g=cred_def.value.revocation.g,
@@ -102,7 +98,9 @@ def buildHederaAnonCredsCredDef(cred_def: AcapyAnonCredsCredDef) -> HederaAnonCr
             )
 
 
-def buildAcapyGetCredDefResult(hedera_res: HederaGetCredDefResult) -> AcapyGetCredDefResult:
+def buildAcapyGetCredDefResult(
+        hedera_res: HederaGetCredDefResult
+        ) -> AcapyGetCredDefResult:
    """Translate object."""
    assert hedera_res.credential_definition
 
@@ -144,7 +142,9 @@ def buildAcapyGetCredDefResult(hedera_res: HederaGetCredDefResult) -> AcapyGetCr
            )
 
 
-def buildAcapyGetSchemaResult(hedera_res: HederaGetSchemaResult) -> AcapyGetSchemaResult:
+def buildAcapyGetSchemaResult(
+        hedera_res: HederaGetSchemaResult
+        ) -> AcapyGetSchemaResult:
    """Translate object."""
    assert hedera_res.schema
 
@@ -160,7 +160,11 @@ def buildAcapyGetSchemaResult(hedera_res: HederaGetSchemaResult) -> AcapyGetSche
            schema_metadata=hedera_res.schema_metadata
            )
 
-def buildAcapySchemaResult(res: HederaSchemaResult, *, job_id=None) -> AcapySchemaResult:
+def buildAcapySchemaResult(
+        res: HederaSchemaResult,
+        *,
+        job_id=None
+        ) -> AcapySchemaResult:
     """Translate object."""
     return AcapySchemaResult(
             job_id=job_id,
@@ -178,7 +182,11 @@ def buildAcapySchemaResult(res: HederaSchemaResult, *, job_id=None) -> AcapySche
             schema_metadata=res.schema_metadata
             )
 
-def buildAcapyCredDefResult(hedera_res: HederaCredDefResult, *, job_id=None) -> AcapyCredDefResult:
+def buildAcapyCredDefResult(
+        hedera_res: HederaCredDefResult,
+        *,
+        job_id=None
+        ) -> AcapyCredDefResult:
     """Translate object."""
     state = hedera_res.credential_definition_state
     cred_def = state.credential_definition
@@ -225,7 +233,11 @@ def buildAcapyCredDefResult(hedera_res: HederaCredDefResult, *, job_id=None) -> 
             registration_metadata=hedera_res.registration_metadata,
             credential_definition_metadata=hedera_res.credential_definition_metadata)
 
-def buildAcapyRevListResult(hedera_res: HederaRegisterRevListResult, *, job_id=None) -> AcapyRevListResult:
+def buildAcapyRevListResult(
+        hedera_res: HederaRegisterRevListResult,
+        *,
+        job_id=None
+        ) -> AcapyRevListResult:
     """Translate object."""
     return AcapyRevListResult(
             job_id=job_id,
@@ -243,9 +255,16 @@ def buildAcapyRevListResult(hedera_res: HederaRegisterRevListResult, *, job_id=N
             revocation_list_metadata=hedera_res.revocation_list_metadata
             )
 
-def buildAcapyRevRegDefResult(hedera_res: HederaRegisterRevRegDefResult, *, job_id=None) -> AcapyRevRegDefResult:
+def buildAcapyRevRegDefResult(
+        hedera_res: HederaRegisterRevRegDefResult, 
+        *, 
+        job_id=None
+        ) -> AcapyRevRegDefResult:
     """Translate object."""
-    assert hedera_res.revocation_registry_definition_state.revocation_registry_definition_id is not None
+    assert (hedera_res
+                .revocation_registry_definition_state
+                .revocation_registry_definition_id
+                    is not None)
 
     return AcapyRevRegDefResult(
             job_id=job_id,
@@ -270,7 +289,9 @@ def buildAcapyRevRegDefResult(hedera_res: HederaRegisterRevRegDefResult, *, job_
             )
 
 
-def buildAcapyGetRevRegDefResult(hedera_res: HederaGetRevRegDefResult) -> AcapyGetRevRegDefResult:
+def buildAcapyGetRevRegDefResult(
+        hedera_res: HederaGetRevRegDefResult
+        ) -> AcapyGetRevRegDefResult:
     """Translate object."""
     assert hedera_res.revocation_registry_definition is not None
 
@@ -293,7 +314,9 @@ def buildAcapyGetRevRegDefResult(hedera_res: HederaGetRevRegDefResult) -> AcapyG
             )
 
 
-def buildHederaAnonCredsRevRegDef(revocation_registry_definition: AcapyRevRegDef) -> HederaAnonCredsRevRegDef:
+def buildHederaAnonCredsRevRegDef(
+        revocation_registry_definition: AcapyRevRegDef
+        ) -> HederaAnonCredsRevRegDef:
     """Translate object."""
     return HederaAnonCredsRevRegDef(
             issuer_id=revocation_registry_definition.issuer_id,
@@ -307,7 +330,9 @@ def buildHederaAnonCredsRevRegDef(revocation_registry_definition: AcapyRevRegDef
                 )
             )
 
-def buildHederaAnonCredsRevList(rev_list: AcapyRevList) -> HederaAnonCredsRevList:
+def buildHederaAnonCredsRevList(
+        rev_list: AcapyRevList
+        ) -> HederaAnonCredsRevList:
     """Translate object."""
     return HederaAnonCredsRevList(
             issuer_id=rev_list.issuer_id,
@@ -318,7 +343,9 @@ def buildHederaAnonCredsRevList(rev_list: AcapyRevList) -> HederaAnonCredsRevLis
             )
 
 
-def buildAcapyGetRevListResult(hedera_res: HederaGetRevListResult) -> AcapyGetRevListResult:
+def buildAcapyGetRevListResult(
+        hedera_res: HederaGetRevListResult
+        ) -> AcapyGetRevListResult:
     """Translate object."""
     assert hedera_res.revocation_list is not None
 
@@ -331,6 +358,7 @@ def buildAcapyGetRevListResult(hedera_res: HederaGetRevListResult) -> AcapyGetRe
                 timestamp=hedera_res.revocation_list.timestamp
                 ),
             resolution_metadata=hedera_res.resolution_metadata,
-            revocation_registry_metadata=hedera_res.revocation_list_metadata # TODO: Why is this different?
-            )
 
+            # TODO: Why is this different?
+            revocation_registry_metadata=hedera_res.revocation_list_metadata
+            )

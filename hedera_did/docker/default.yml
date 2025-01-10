@@ -10,6 +10,7 @@ inbound-transport:
 outbound-transport: http
 endpoint:
   - http://host.docker.internal:3000
+  - ws://host.docker.internal:3002
 
 plugin:
   - hedera_did

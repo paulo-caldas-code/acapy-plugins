@@ -1,18 +1,15 @@
 import json
 from typing import cast
+from unittest import IsolatedAsyncioTestCase
+from unittest.mock import AsyncMock, MagicMock, Mock, create_autospec, patch
 
-from acapy_agent.utils.testing import create_test_profile
 from acapy_agent.admin.request_context import AdminRequestContext
+from acapy_agent.utils.testing import create_test_profile
 from acapy_agent.wallet.base import BaseWallet, KeyInfo
 from acapy_agent.wallet.key_type import ED25519, KeyTypes
-
-from unittest import IsolatedAsyncioTestCase
-
-from unittest.mock import Mock, patch, AsyncMock, MagicMock, create_autospec
-
-from hedera_did import routes as test_module
-
 from aiohttp import web
+from hedera_did import routes as test_module
+import pytest
 
 class TestRoutes(IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
@@ -54,7 +51,7 @@ class TestRoutes(IsolatedAsyncioTestCase):
 
         self.session_inject[BaseWallet] = None
 
-        with self.assertRaises(web.HTTPForbidden):
+        with pytest.raises(web.HTTPForbidden, match="No wallet available"):
           await test_module.hedera_register_did(self.request)
 
 
@@ -62,7 +59,7 @@ class TestRoutes(IsolatedAsyncioTestCase):
         self.request.json = AsyncMock()
         self.request.json.return_value = { "key_type": "unsupported_key_type" }
 
-        with self.assertRaises(web.HTTPForbidden):
+        with pytest.raises(web.HTTPForbidden, match="Unsupported key type unsupported_key_type"):
             await test_module.hedera_register_did(self.request)
 
 
@@ -72,18 +69,33 @@ class TestRoutes(IsolatedAsyncioTestCase):
         ver_key = "DCPsdMHmKoRv44epK3fNCQRUvk9ByPYeqgZnsU1fejuX"
         did = "did:hedera:testnet:zEBxZtv3ttiDsySAYa6eNxorEYSnUk7WsKJBUfUjFQiLL_0.0.5244981"
 
-        self.request.json = AsyncMock()
-        self.request.json.return_value = { "key_type": key_type }
+        self.request.json = AsyncMock(
+                return_value = {
+                    "key_type": key_type
+                    }
+                )
+
+        self.wallet._session = MagicMock(
+                handle=AsyncMock(
+                    fetch_key=AsyncMock(
+                        return_value=Mock(
+                            key=Mock(
+                                get_secret_bytes=Mock(
+                                    return_value=b"\xbcAQ\xb8\x91NZP\xb4\x99\xf6f\xb7\xff\xca\x7f\xffO\x9aC\xdb\xbf\xea\xed2\x83\xa0\xf2\xc1\xca\t]"
+                                    )
+                                )
+                            )
+                        ),
+                    insert=AsyncMock(
+                        return_value=None
+                        )
+                    )
+                )
 
         self.wallet.create_key.return_value = KeyInfo(ver_key, {}, ED25519)
-        self.wallet._session = MagicMock()
-        self.wallet._session.handle = MagicMock()
-        self.wallet._session.handle.fetch_key = AsyncMock()
-        self.wallet._session.handle.fetch_key.return_value = Mock(key=Mock(get_secret_bytes=Mock(return_value=b"\xbcAQ\xb8\x91NZP\xb4\x99\xf6f\xb7\xff\xca\x7f\xffO\x9aC\xdb\xbf\xea\xed2\x83\xa0\xf2\xc1\xca\t]")))
 
         mock_hedera_did.return_value.register = AsyncMock(return_value = {})
         mock_hedera_did.return_value.identifier = did
-
 
         result = await test_module.hedera_register_did(self.request)
         body = cast(bytes, result.body)
@@ -98,6 +110,20 @@ class TestRoutes(IsolatedAsyncioTestCase):
 
     async def test_post_process_routes(self):
         mock_app = MagicMock(_state={"swagger_dict": {}})
-        test_module.post_process_routes(mock_app)
-        assert "tags" in mock_app._state["swagger_dict"]
 
+        test_module.post_process_routes(mock_app)
+
+        app_state = mock_app._state
+        tags = app_state["swagger_dict"]["tags"]
+
+        assert tags
+
+        hedera_tags = [i
+                       for i in tags
+                       if i["name"] == "Hedera"
+                       ][0]
+
+        assert hedera_tags
+        assert hedera_tags.get("name") == "Hedera"
+        assert hedera_tags.get("description") == "Hedera plugin API"
+        assert "externalDocs" in hedera_tags
