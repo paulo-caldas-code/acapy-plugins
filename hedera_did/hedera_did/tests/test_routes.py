@@ -118,7 +118,7 @@ class TestRoutes(IsolatedAsyncioTestCase):
 
         assert tags
 
-        hedera_tags = [i
+        hedera_tags = [i 
                        for i in tags
                        if i["name"] == "Hedera"
                        ][0]

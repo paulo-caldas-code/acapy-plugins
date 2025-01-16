@@ -255,7 +255,7 @@ class TestTypes:
                     reason=reason
                     )
                 )
-            )
+            ) 
 
         assert acapy_schema_result.registration_metadata == registration_metadata
         assert acapy_schema_result.schema_metadata == schema_metadata
@@ -471,3 +471,11 @@ class TestTypes:
         assert hedera_anon_creds_rev_reg_def.value.max_cred_num == max_cred_num
         assert hedera_anon_creds_rev_reg_def.value.tails_location == tails_location
         assert hedera_anon_creds_rev_reg_def.value.tails_hash == tails_hash
+
+    # TODO
+    # def testBuildHederaAnonCredsRevList(self):
+    #     pass
+
+    # TODO
+    # def testBuildAcapyGetRevListResult(self):
+    #     pass

@@ -30,8 +30,6 @@ auto-accept-requests: true
 auto-ping-connection: true
 auto-respond-messages: true
 
-tails-server-base-url: <CHANGE_ME>
-
 multitenant: true
 multitenant-admin: true
 jwt-secret: test

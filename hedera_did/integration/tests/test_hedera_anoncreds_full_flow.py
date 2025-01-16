@@ -273,7 +273,7 @@ class TestHederaAnonCredsFullFlow:
               |    Holder stores accepted credential    |
               +-----------------------------------------+
               """)
-        local_credential_id = "123"
+        local_credential_id = f"local_credential{int(time.time())}"
 
         holder.store_credential(
                 cred_ex_id=holder_cred_ex_id,
@@ -356,6 +356,91 @@ class TestHederaAnonCredsFullFlow:
         time.sleep(10)
 
         print("""
+              #######################################################################
+              #    Present proof of valid credential (with non-revocation proof)    #
+              #######################################################################
+              """)
+        print("""
+              +-----------------------------------------+
+              | Issuer send presentation proof request  |
+              +-----------------------------------------+
+              """)
+        resp = issuer.send_presentation_proof_request(
+                connection_id=issuer_connection_id,
+                cred_def_id=credential_definition_id,
+                attributes=schema_attribute_names,
+                version=schema_version,
+                comment="Credential validation of holder should be valid with non-revocation proof",
+                non_revoked = {
+                    "to": int(time.time()) + 300
+                }
+        )
+
+        assert resp.get("state") == "request-sent"
+
+        time.sleep(10)
+
+        print("""
+              +-----------------------------------------+
+              |    Holder retrieves pres exchange id    |
+              +-----------------------------------------+
+              """)
+        resp = holder.get_presentation_proof_records(state="request-received")
+
+        presentation_proof_records_results = resp.get("results")
+        assert presentation_proof_records_results
+        assert type(presentation_proof_records_results) is list
+        assert len(presentation_proof_records_results) == 1
+
+        [presentation_proof_record] = presentation_proof_records_results
+
+        assert presentation_proof_record.get("state") == "request-received"
+
+        holder_pres_ex_id = presentation_proof_record.get("pres_ex_id")
+        assert holder_pres_ex_id
+
+        print("""
+              +-----------------------------------------+
+              |   Holder accepts presentation request   |
+              +-----------------------------------------+
+              """)
+        holder.accept_proof_request(
+                pres_ex_id=holder_pres_ex_id,
+                cred_id=local_credential_id,
+                attributes=schema_attribute_names
+                )
+
+        time.sleep(10)
+
+        print("""
+              +-----------------------------------------+
+              |   Issuer checks presentation request    |
+              +-----------------------------------------+
+              """)
+        resp = issuer.get_presentation_proof_records()
+
+        presentation_proof_records_results = resp.get("results")
+        assert presentation_proof_records_results
+        assert type(presentation_proof_records_results) is list
+        assert len(presentation_proof_records_results) == 2
+
+        # List is not ordered
+        presentation_proof_records_results.sort(key=lambda x: x.get("created_at"))
+
+        [
+            first_presentation_proof_records_result,
+            second_presentation_proof_records_result
+        ] = presentation_proof_records_results
+
+        assert first_presentation_proof_records_result.get("state") == "done"
+        assert first_presentation_proof_records_result.get("verified") == "true"
+
+        assert second_presentation_proof_records_result.get("state") == "done"
+        assert second_presentation_proof_records_result.get("verified") == "true"
+
+        time.sleep(10)
+
+        print("""
               ###########################################
               #  Present proof of revoked credential    #
               ###########################################
@@ -433,18 +518,24 @@ class TestHederaAnonCredsFullFlow:
         presentation_proof_records_results = resp.get("results")
         assert presentation_proof_records_results
         assert type(presentation_proof_records_results) is list
-        assert len(presentation_proof_records_results) == 2
+        assert len(presentation_proof_records_results) == 3
 
-        # List sometimes comes out of order
+        # List is not ordered
         presentation_proof_records_results.sort(key=lambda x: x.get("created_at"))
 
         [
           first_presentation_proof_records_result,
-          second_presentation_proof_records_result
+          second_presentation_proof_records_result,
+          third_presentation_proof_records_result
         ] = presentation_proof_records_results
 
         assert first_presentation_proof_records_result.get("state") == "done"
         assert first_presentation_proof_records_result.get("verified") == "true"
 
         assert second_presentation_proof_records_result.get("state") == "done"
-        assert second_presentation_proof_records_result.get("verified") == "false"
+        assert second_presentation_proof_records_result.get("verified") == "true"
+
+        assert third_presentation_proof_records_result.get("state") == "done"
+        assert third_presentation_proof_records_result.get("verified") == "false"
+
+

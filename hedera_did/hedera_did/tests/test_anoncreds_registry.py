@@ -54,7 +54,7 @@ class TestAnonCredsRegistry:
                         "version": version
                     }
                 }
-
+        
 
     @patch("hedera_did.anoncreds_registry.SdkHederaAnonCredsRegistry")
     async def test_get_credential_definition(self, mock_hedera_did_anoncreds_registry, profile, context):

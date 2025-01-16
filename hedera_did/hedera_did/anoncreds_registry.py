@@ -251,7 +251,7 @@ class HederaAnonCredsRegistry(BaseAnonCredsResolver, BaseAnonCredsRegistrar):
 
             assert (hedera_res
                         .revocation_registry_definition_state
-                        .revocation_registry_definition_id
+                        .revocation_registry_definition_id 
                             is not None)
 
             return buildAcapyRevRegDefResult(hedera_res)
