@@ -1,4 +1,4 @@
-"""Load configuration parameters."""
+"""Load configuration parameters. (test)"""
 
 from dataclasses import dataclass
 from os import getenv

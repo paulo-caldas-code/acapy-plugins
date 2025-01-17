@@ -69,6 +69,9 @@ jobs:
         id: install-dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: |
+          poetry config repositories.did-sdk-py https://github.com/hashgraph/did-sdk-py
+          poetry config http-basic.did-sdk-py x-token-auth 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
+          
           for dir in ${{ steps.changed-plugins.outputs.changed-plugins }}; do
             cd $dir
             poetry install --no-interaction --no-root --all-extras
