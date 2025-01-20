@@ -28,7 +28,68 @@ Other operations with Hedera DID and Anoncreds registry supported via existing A
 
 ## Demo
 
-TODO
+The demo serves as an interactive display of the features present in this plugin.
+The general flow and interface used are very similar to ACA-Py's very own [demo](https://aca-py.org/latest/demo/), so if you went through it, it shouldn't be too different.
+
+This demo will contain two actors: a credential issuer - which will also play the role of verifier, and a holder.
+Each of these actors will have an associated ACA-Py instance. These instances will have our plugin enabled, use their own wallet, and be subscribed to actionable events, so users can be notified when, for example, a new connection was made.
+
+A helper script - `run_demo` was created to abstract away much of the required setup.
+To run this script you'll need the following dependencies:
+
+- bash
+- curl
+- jq
+- ngrok (if you wish to make agents publicly accessible)
+- docker
+- docker-compose
+
+When these are installed, open two different terminal instances and respectively run the following commands inside the `demo/` folder:
+
+```bash
+# Optionally export ngrok authentication token, which will automatically make agent publicly exposed
+export NGROK_AUTHTOKEN="<CHANGE_ME>"
+
+# Run issuer actor
+./run_demo issuer
+```
+
+```bash
+# Run holder actor
+./run_demo holder
+```
+
+The issuer process will have more required setup work, such as registering a DID on Hedera, and creating both a schema and associated credential definition.
+After all setup is done, it will output both a qr code (if you wish to connect via a mobile application) or a JSON connection object. This object can be pasted into the holder's running process to establish the connection. After this is done, both entities are now interactive by inputting keys into a textual menu.
+
+For reference, here are the menus for both roles:
+
+Issuer:
+
+```text
+=== Main Issuer menu ===
+    (1)    Issue credential
+    (2)    Send Proof Request
+    (3)    Send Message
+    (4)    Create New Invitation
+    (5)    Revoke credential
+    (x)    Close demo application
+ > _  <--- Your input here
+```
+
+Holder:
+
+```text
+=== Main Holder menu ===
+    (3)    Send message
+    (4)    Input new invitation
+    (x)    Close demo application
+ > _  <--- Your input here
+```
+
+The actions are self explanatory. When events trigger, the respective actor gets a notification on top of their menu - for example, upon connection established, new message, or proof request.
+Proof requests are automatically accepted.
+After every new user input, the screen refreshes.
 
 ## Usage
 

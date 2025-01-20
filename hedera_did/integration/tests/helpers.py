@@ -1,10 +1,10 @@
-from functools import wraps
+from time import sleep
+import logging
 from pprint import PrettyPrinter
 from time import time
 from typing import Literal
 from urllib.parse import quote_plus
 
-import pytest
 import requests
 
 HOLDER_ENDPOINT = "http://holder:3001"
@@ -12,45 +12,42 @@ ISSUER_ENDPOINT = "http://issuer:3001"
 
 pp = PrettyPrinter(indent=2, sort_dicts=False)
 
+LOGGER = logging.getLogger(__name__)
+
+
 def _format(obj):
     pretty_out = f"{pp.pformat(obj)}"
 
     return f"{pretty_out}\n"
 
-def fail_if_not_ok():
-    """Fail the current test if wrapped call fails with message."""
-
-    def _fail_if_not_ok(func):
-        @wraps(func)
-        def _wrapper(*args, **kwargs):
-            response = func(*args, **kwargs)
-            if not response.status_code == 200:
-                pytest.fail(f"{args}, {response.content}")
-            return response
-
-        return _wrapper
-
-    return _fail_if_not_ok
-
-
-def unwrap_json_response(func):
-    """Unwrap a requests response object to json."""
-
-    @wraps(func)
-    def _wrapper(*args, **kwargs) -> dict:
-        response = func(*args, **kwargs)
-        return response.json()
-
-    return _wrapper
-
-
 class Agent:
     """Class for interacting with Agent over Admin API."""
 
-    def __init__(self, name: str, base_url: str):
+    def __init__(self, name: str, base_url: str, wallet_webhook_url:str):
         self.name = name
         self.base_url = base_url
         self.token: str | None  = None
+        self.wallet_webhook_url = wallet_webhook_url
+
+        # Don't proceed if unable to communicate with agent
+        conn_tries_left = 5
+        while conn_tries_left > 0:
+            try:
+                resp = requests.get(
+                        f"{self.base_url}/status/live",
+                        )
+
+                print(resp.json())
+
+                break
+            except ConnectionError:
+               sleep(5)
+               conn_tries_left -= 1
+
+        if conn_tries_left == 0:
+            raise Exception("Could not connect to agent")
+
+
 
     def _log_request(self, destination_url, method, path, response, **kwargs):
         obj = {
@@ -68,14 +65,13 @@ class Agent:
         except Exception:
             obj["response_content"] = response.content
 
-        print(_format(obj))
+        LOGGER.info(_format(obj))
+
 
     def _validate_wallet_created(self):
         if not self.token:
             raise Exception("Requires call to create_wallet with token persisted")
 
-    @unwrap_json_response
-    @fail_if_not_ok()
     def _auth_get(self, path: str, **kwargs):
         """Get."""
         self._validate_wallet_created()
@@ -86,6 +82,9 @@ class Agent:
 
         response = requests.get(f"{self.base_url}/{path}", **kwargs)
 
+        if response.status_code != 200:
+            raise Exception("Failed! Bad status code")
+
         self._log_request(
                 destination_url=self.base_url,
                 method="get",
@@ -93,10 +92,8 @@ class Agent:
                 response=response
                 )
 
-        return response
+        return response.json()
 
-    @unwrap_json_response
-    @fail_if_not_ok()
     def _auth_post(self, path: str, **kwargs):
         """Post."""
         self._validate_wallet_created()
@@ -107,6 +104,9 @@ class Agent:
 
         response = requests.post(f"{self.base_url}{path}", **kwargs)
 
+        if response.status_code != 200:
+            raise Exception("Failed! Bad status code")
+
         self._log_request(
                 destination_url=self.base_url,
                 method="post",
@@ -115,7 +115,7 @@ class Agent:
                 **kwargs
                 )
         
-        return response
+        return response.json()
 
     def create_wallet(self, *, persist_token=False):
         """Create wallet."""
@@ -133,7 +133,7 @@ class Agent:
                     "wallet_name": f"testwalletname{self.name}{time()}",
                     "wallet_type": "askar-anoncreds",
                     "wallet_webhook_urls": [
-                        "http://dummy-webhook-server:8080/webhooks"
+                        self.wallet_webhook_url
                     ]
                 }
             )
@@ -346,21 +346,21 @@ class Agent:
                 }
 
         obj = {
-                          "auto_remove": False,
-                          "auto_verify": True,
-                          "comment": comment,
-                          "connection_id": connection_id,
-                          "presentation_request": {
-                            "anoncreds": {
-                              "name": "Proof request",
-                              "requested_attributes": requested_attributes,
-                              "requested_predicates": {},
-                              "version": version,
-                              "non_revoked": non_revoked if non_revoked else None
-                            }
-                          },
-                          "trace": False
-                      }
+                  "auto_remove": False,
+                  "auto_verify": True,
+                  "comment": comment,
+                  "connection_id": connection_id,
+                  "presentation_request": {
+                    "anoncreds": {
+                      "name": "Proof request",
+                      "requested_attributes": requested_attributes,
+                      "requested_predicates": {},
+                      "version": version,
+                      "non_revoked": non_revoked if non_revoked else None
+                    }
+                  },
+                  "trace": False
+              }
 
         return self._auth_post(
                   "/present-proof-2.0/send-request",
@@ -460,3 +460,16 @@ class Agent:
                 f"/anoncreds/credential-definition/{encoded_credential_definition_id}"
                 )
 
+    def get_credential(self, credential_id):
+        """Get credential."""
+        return self._auth_get(f"/credential/{credential_id}")
+
+
+    def send_message(self, connection_id, message):
+        """Send message."""
+        return self._auth_post(
+            f"/connections/{connection_id}/send-message",
+            json={
+                "content": message
+                }
+            )
